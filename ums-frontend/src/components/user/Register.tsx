@@ -11,17 +11,24 @@ const Register = () => {
     const [phone,setPhone] = useState<number | undefined>(undefined);
     const [password,setPassword] = useState("");
     const [image,setImage] = useState<File | null>(null);
-    const [error,setError] = useState<string | null>(null);
+    const [errors,setErrors] = useState<{[key: string]: string}>({});
     const [loading,setLoading] = useState(false);
     const navigate = useNavigate();
 
     const validateInputs = () => {
-        if(!name.trim()) return "Name is required.";
-        if(!email.trim()) return "Email is required.";
-        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return "Invalid email format.";
-        if(!phone || phone.toString().length < 10) return "Valid phone number is required.";
-        if(password.length < 6) return "Password must be at least 6 characters long.";
-        return null;
+
+        let newErrors: { [key:string]: string } = {};
+
+        if(!name.trim()) newErrors.name = "Name is required.";
+        if(!email.trim()){
+            newErrors.email = "Email is required.";
+        } else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+            newErrors.email = "Invalid email format.";
+        } 
+        if(!phone || phone.toString().length < 10) newErrors.phone = "Valid phone number is required.";
+        if(password.length < 6) newErrors.password = "Password must be at least 6 characters long.";
+        
+        return newErrors;
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,12 +44,12 @@ const Register = () => {
 
     const handleSubmit = async (e:React.FormEvent) => {
         e.preventDefault();
-        setError(null);
+        setErrors({});
         setLoading(true);
 
-        const validationError = validateInputs();
-        if(validationError){
-            setError(validationError);
+        const newErrors = validateInputs();
+        if(Object.keys(newErrors).length > 0){
+            setErrors(newErrors);
             setLoading(false);
             return;
         }
@@ -53,11 +60,12 @@ const Register = () => {
                 imageUrl = await uploadImageToCloudinary(image);
             }
             let mob = Number(phone);
+            console.log(name, email, mob, password, imageUrl)
             await register(name, email, mob, password, imageUrl);
             toast.success("Registration Successful");
             navigate("/");
         } catch (error: any) {
-            setError(error.message)
+            toast.error(error.message)
         } finally { 
             setLoading(false);
         }
@@ -65,7 +73,7 @@ const Register = () => {
 
     return (
         <div className="register-wrapper">
-            <div className="register-conatiner">
+            <div className="register-container">
                 <div className="register-box">
                     <div className="register-header">
                         <h2>Create Account</h2>
@@ -83,6 +91,7 @@ const Register = () => {
                             placeholder="Enter your full name" 
                             />
                         </div>
+                        {errors.name && <div className="error-message">{errors.name}</div>}
 
                         <div className="form-group">
                             <label htmlFor="email">Email Address</label>
@@ -94,6 +103,7 @@ const Register = () => {
                             placeholder="Enter your email" 
                             />
                         </div>
+                        {errors.email && <div className="error-message">{errors.email}</div>}
 
                         <div className="form-group">
                             <label htmlFor="phone">Phone Number</label>
@@ -105,6 +115,7 @@ const Register = () => {
                             placeholder="Enter your phone number" 
                             />
                         </div>
+                        {errors.phone && <div className="error-message">{errors.phone}</div>}
 
                         <div className="form-group">
                             <label htmlFor="password">Password</label>
@@ -116,6 +127,7 @@ const Register = () => {
                             placeholder="Create a password" 
                             />
                         </div>
+                        {errors.password && <div className="error-message">{errors.password}</div>}
 
                         <div className="form-group">
                             <label htmlFor="profile-image">Profile Picture</label>
@@ -128,20 +140,18 @@ const Register = () => {
                                 className="file-input"
                                 />
                                 <div className="file-input-text">
-                                    {image ? "uploadedImage" : "Choose a file or drag it here"}
+                                    {image ? "Image uploaded" : "Choose a file or drag it here"}
                                 </div>
                             </div>
                             <span className="file-input-help">Maximum file size: 5MB</span>
                         </div>
-
-                        {error && <div className="error-message">{error}</div> }
 
                         <button type="submit" className="register-button" disabled={loading}>
                             {loading ? "Creating Account..." : "Create Account"}
                         </button>
 
                         <div className="login-prompt">
-                            Already have an account? <a href="/login">Sign in</a>
+                            Already have an account? <a href="/">Sign in</a>
                         </div>
                     </form>
                 </div>

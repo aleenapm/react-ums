@@ -9,38 +9,33 @@ const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [errors, setErrors] = useState<{email?:string; password?: string }>({});
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const validateInputs = () => {
-        if(!email) {
-            setError("Email is required.");
-            return false;
+
+        let newErrors: {email?:string; password?:string} = {};
+
+        if(!email.trim()) {
+            newErrors.email = "Email is required.";
+        } else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            newErrors.email = "Invalid email format.";
         }
 
-        const emailRegex = /^[^\s@]+2[^\s@]+\.[^\s@]+$/;
-        if(!emailRegex.test(email)){
-            setError("Invalid email format.");
-            return false;
+        if(!password.trim()){
+            newErrors.password = "Password is required.";
+        } else if(password.length < 6){
+            newErrors.password = "Password must be at least 6 characters.";
         }
 
-        if(!password){
-            setError("Password is required.");
-            return false;
-        }
-
-        if(password.length < 6){
-            setError("Password must be at least 6 characters.");
-            return false;
-        }
-
-        return true;
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
+        setErrors({});
 
         if(!validateInputs()) return;
 
@@ -51,10 +46,15 @@ const Login = () => {
             dispatch(loginSuccess(userData));
             navigate("/dashboard");
         } catch (error:any) {
-            setError("Login failed. Please check your credentials.")
+            setErrors({password:"Login failed. Please check your credentials."})
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleAdminLogin = (e: React.MouseEvent) => {
+        e.preventDefault(); 
+        navigate("/admin/login");
     };
 
     return (
@@ -76,6 +76,7 @@ const Login = () => {
                             onChange={(e)=>setEmail(e.target.value)}
                             placeholder="Enter your email" 
                             />
+                        {errors.email && <div className="error-message">{errors.email}</div>}
                         </div>
 
                         <div className="form-group">
@@ -87,12 +88,15 @@ const Login = () => {
                             onChange={(e)=>setPassword(e.target.value)}
                             placeholder="Enter your password" 
                             />
+                            {errors.password && <div className="error-message">{errors.password}</div>}
                         </div>
-
-                        {error && <div className="error-message">{error}</div> }
 
                         <button type="submit" className="login-button" disabled={loading}>
                             {loading ? "Signing in..." : "Sign in"}
+                        </button>
+
+                        <button className="adminlogin-button" onClick={handleAdminLogin}>
+                            Admin Login
                         </button>
 
                         <div className="signup-prompt">

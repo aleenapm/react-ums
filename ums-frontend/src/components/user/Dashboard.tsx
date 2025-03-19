@@ -85,7 +85,7 @@ const Dashboard = () => {
     }
 
     return (
-        <div className="dashboard-container">
+        <div className="dashboard-containerr">
             <div className="dashboard-card fade-in">
                 <div className="dashboard-header">
                     <h2 className="dashboard-title">Welcome, {user.name}</h2>

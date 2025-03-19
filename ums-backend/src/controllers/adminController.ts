@@ -100,8 +100,8 @@ export const updateUsers = async(req:Request,res:Response):Promise<void> => {
 export const deleteUser = async (req:Request,res:Response):Promise<void> => {
     try{
         const {id} = req.params;
-        console.log("userID",id);
-        const user = await Users.findByIdAndUpdate(id);
+        // console.log("userID",id);
+        const user = await Users.findByIdAndDelete(id);
 
         if(!user){
             res.status(400).json({message: "The user has been deleted successfully"});
